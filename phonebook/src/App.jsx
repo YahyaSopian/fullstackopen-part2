@@ -12,8 +12,15 @@ const App = () => {
     const personObject = {
       name: newName,
     };
-    setPersons(persons.concat(personObject));
-    setNewName("");
+    // Mengecek apakah nama yang diinput sudah ada ataukan belum
+    const existName = persons.some((person) => person.name === newName);
+
+    if (existName) {
+      alert(`${newName} is already added to phonebook`);
+    } else {
+      setPersons(persons.concat(personObject));
+      setNewName("");
+    }
   };
   const handlePersonChange = (event) => {
     console.log(event.target.value);

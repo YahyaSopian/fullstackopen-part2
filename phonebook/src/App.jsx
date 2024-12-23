@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Filter from "./components/Filter";
 import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
@@ -23,12 +22,19 @@ const App = () => {
   const handleNumberChange = (event) => {
     setNewNumber(event.target.value);
   };
-  const addPerson = (event) => {
+  const addNote = (event) => {
     event.preventDefault();
     const noteObject = { name: newName, number: newNumber };
-    const nameExists = persons.some((person) => person.name === newName);
-    if (nameExists) {
-      alert(`${newName} is already added to phonebook`);
+    const existingPerson = persons.find((person) => person.name === newName);
+    if (existingPerson) {
+      const confirmUpdate = window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`);
+      if (confirmUpdate) {
+        personService.update(existingPerson.id, noteObject).then((returnedPerson) => {
+          setPersons(persons.map((person) => (person.id !== existingPerson.id ? person : returnedPerson)));
+          setNewName("");
+          setNewNumber("");
+        });
+      }
     } else {
       personService.create(noteObject).then((returnedPerson) => {
         setPersons(persons.concat(returnedPerson));
@@ -42,7 +48,7 @@ const App = () => {
     setFilter(event.target.value);
   };
 
-  // fungsi untuk menghapus data person berdasarkan id-nya
+  // fungsi untuk menghapus data person dari server berdasarkan id-nya
   const deletePerson = (id) => {
     const person = persons.find((p) => p.id === id);
     const confirmDelete = window.confirm(`Delete ${person.name}?`);
@@ -60,7 +66,7 @@ const App = () => {
       <h2>Phonebook</h2>
       <Filter value={filter} handleFilter={handleFilterChange} />
       <h2>add a new</h2>
-      <PersonForm handleSubmit={addPerson} valueName={newName} handleName={handleNameChange} valueNumber={newNumber} handleNumber={handleNumberChange} />
+      <PersonForm handleSubmit={addNote} valueName={newName} handleName={handleNameChange} valueNumber={newNumber} handleNumber={handleNumberChange} />
       <h2>Numbers</h2>
       {/* Displaying person */}
       <Persons persons={personsToShow} deletePerson={deletePerson} />
